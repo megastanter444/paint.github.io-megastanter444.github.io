@@ -58,7 +58,6 @@
     height: calc(100vh - 80px); /* чтобы занимать всю высоту окна минус панель */
   }
   #paintCanvas {
-    /* Размер холста увеличен */
     width: 3000px;
     height: 2000px;
   }
@@ -289,9 +288,14 @@ function drawEllipse(x1, y1, x2, y2) {
 // Кнопка отмены
 document.getElementById('undoBtn').onclick = () => { undo(); };
 
-// ======= Добавляем обработчик для "Очистить" ======= 
+// ======= Обработка кнопки "Очистить" ======= 
 document.getElementById('clearBtn').onclick = () => {
   clearCanvas();
+};
+
+// ======= Обработка кнопки "Сохранить" ======= 
+document.getElementById('saveBtn').onclick = () => {
+  saveCanvas();
 };
 </script>
 </body>
