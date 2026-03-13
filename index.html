@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Paint web</title>
+<style>
+  body {
+    margin: 0;
+    background: #c0c0c0;
+    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* Заголовок */
+  #titleBar {
+    background: #0078D7;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: white;
+    font-weight: bold;
+  }
+
+  /* Панель инструментов */
+  #toolbar {
+    display: flex;
+    background: #E1E1E1;
+    padding: 5px;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* Кнопки и селекторы */
+  button, select, input[type=color], input[type=range] {
+    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    padding: 5px 10px;
+    border: 2px solid #999;
+    border-radius: 2px;
+    background: #F0F0F0;
+    cursor: pointer;
+  }
+  button:hover, select:hover, input[type=color]:hover {
+    background: #DDD;
+  }
+
+  /* Холст и контейнер */
+  #canvasContainer {
+    border: 1px solid #888;
+    margin: 10px auto;
+    display: flex;
+    justify-content: center;
+    background: #fff;
+    overflow: auto; /* добавляем прокрутку */
+    width: 100%;
+    height: calc(100vh - 80px); /* чтобы занимать всю высоту окна минус панель */
+  }
+  #paintCanvas {
+    /* Размер холста увеличен */
+    width: 3000px;
+    height: 2000px;
+    /* Для корректного отображения на странице — задать через CSS, а размеры — через атрибуты */
+  }
+</style>
+</head>
+<body>
+
+<!-- Заголовок -->
+<div id="titleBar">Paint web</div>
+
+<!-- Панель инструментов -->
+<div id="toolbar">
+  <!-- Инструменты рисования -->
+  <button id="brushBtn" data-tool="brush">Кисть</button>
+  <button id="lineBtn" data-tool="line">Линия</button>
+  <button id="rectBtn" data-tool="rect">Прямоугольник</button>
+  <button id="ellipseBtn" data-tool="ellipse">Эллипс</button>
+  <button id="fillBtn" data-tool="fill">Заливка</button>
+  <button id="eraserBtn" data-tool="eraser">Ластик</button>
+  <button id="undoBtn" title="Отмена">Отмена</button>
+  <button id="redoBtn" title="Повтор">↻</button>
+  Цвет: <input type="color" id="colorPicker" value="#000000" />
+  Размер: <input type="range" id="sizeRange" min="1" max="50" value="5" />
+  📂 <button id="loadBtn" title="Загрузить изображение">Загрузить</button>
+  <input type="file" id="fileInput" style="display:none" accept="image/*" />
+  💾 <button id="saveBtn" title="Сохранить">Сохранить</button>
+  🧹 <button id="clearBtn" title="Очистить">Очистить</button>
+</div>
+
+<!-- Холст -->
+<div id="canvasContainer">
+  <canvas id="paintCanvas" width="3000" height="2000"></canvas>
+</div>
+
+<!-- Статус -->
+<div id="statusBar">Инструмент: Карандаш | Цвет: #000000 | Размер: 5</div>
+
+<script>
+const canvas = document.getElementById('paintCanvas');
+const ctx = canvas.getContext('2d');
+
+let painting = false;
+let currentTool = 'pencil'; // pencil, brush, line, rect, ellipse, fill, eraser
+let currentColor = document.getElementById('colorPicker').value;
+let brushSize = document.getElementById('sizeRange').value;
+
+let startX = 0, startY = 0;
+let tempCanvas = document.createElement('canvas');
+let tempCtx = tempCanvas.getContext('2d');
+
+let undoStack = [];
+let redoStack = [];
+
+// Обновление статуса
+function updateStatus() {
+  document.getElementById('statusBar').textContent = 
+    `Инструмент: ${currentTool} | Цвет: ${currentColor} | Размер: ${brushSize}`;
+}
+
+// Обновление цвета и размера
+document.getElementById('colorPicker').addEventListener('change', () => {
+  currentColor = document.getElementById('colorPicker').value;
+  updateStatus();
+});
+document.getElementById('sizeRange').addEventListener('input', () => {
+  brushSize = document.getElementById('sizeRange').value;
+  updateStatus();
+});
+
+// Назначение инструментов
+document.querySelectorAll('#toolbar button').forEach(btn => {
+  if (btn.id !== 'undoBtn' && btn.id !== 'redoBtn' && btn.id !== 'loadBtn' && btn.id !== 'saveBtn' && btn.id !== 'clearBtn') {
+    btn.onclick = () => {
+      currentTool = btn.getAttribute('data-tool');
+      updateStatus();
+    };
+  }
+});
+
+// Загрузка файла
+const fileInput = document.getElementById('fileInput');
+document.getElementById('loadBtn').onclick = () => {
+  fileInput.click();
+};
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        saveState();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Основные функции для undo/redo
+function saveState() {
+  if (undoStack.length > 20) undoStack.shift();
+  undoStack.push(canvas.toDataURL());
+}
+function undo() {
+  if (undoStack.length === 0) return;
+  redoStack.push(canvas.toDataURL());
+  let imgData = undoStack.pop();
+  let img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+  };
+  img.src = imgData;
+}
+function redo() {
+  if (redoStack.length === 0) return;
+  undoStack.push(canvas.toDataURL());
+  let imgData = redoStack.pop();
+  let img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+  };
+  img.src = imgData;
+}
+function clearCanvas() {
+  saveState();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+function saveCanvas() {
+  const dataURL = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataURL;
+  a.download = 'paint.png';
+  a.click();
+}
+
+// Обработка мыши
+canvas.addEventListener('mousedown', (e) => {
+  saveState();
+  painting = true;
+  startX = e.offsetX;
+  startY = e.offsetY;
+  if (currentTool==='fill') {
+    fillArea(e.offsetX, e.offsetY);
+  } else if (currentTool==='pencil' || currentTool==='brush' || currentTool==='eraser') {
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = currentTool==='eraser' ? '#fff' : currentColor;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  } else if (currentTool==='line' || currentTool==='rect' || currentTool==='ellipse') {
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(canvas, 0, 0);
+  }
+});
+canvas.addEventListener('mouseup', (e) => {
+  if (!painting) return;
+  if (currentTool==='line') {
+    drawLine(startX, startY, e.offsetX, e.offsetY);
+  } else if (currentTool==='rect') {
+    drawRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
+  } else if (currentTool==='ellipse') {
+    drawEllipse(startX, startY, e.offsetX, e.offsetY);
+  }
+  painting=false;
+});
+canvas.addEventListener('mouseout', () => {
+  if (painting && (currentTool==='line' || currentTool==='rect' || currentTool==='ellipse')) {
+    // ничего не делаем
+  }
+  painting=false;
+});
+canvas.addEventListener('mousemove', (e) => {
+  if (!painting) return;
+  if (currentTool==='pencil' || currentTool==='brush' || currentTool==='eraser') {
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = currentTool==='eraser' ? '#fff' : currentColor;
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+  } else if (currentTool==='line' || currentTool==='rect' || currentTool==='ellipse') {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(tempCanvas, 0, 0);
+    if (currentTool==='line') {
+      drawLine(startX, startY, e.offsetX, e.offsetY);
+    } else if (currentTool==='rect') {
+      drawRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
+    } else if (currentTool==='ellipse') {
+      drawEllipse(startX, startY, e.offsetX, e.offsetY);
+    }
+  }
+});
+
+// Функции
+function drawLine(x1, y1, x2, y2) {
+  ctx.strokeStyle = currentColor;
+  ctx.lineWidth = brushSize;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+}
+function drawRect(x, y, w, h) {
+  ctx.strokeStyle = currentColor;
+  ctx.lineWidth = brushSize;
+  ctx.strokeRect(x, y, w, h);
+}
+function drawEllipse(x1, y1, x2, y2) {
+  ctx.strokeStyle = currentColor;
+  ctx.lineWidth = brushSize;
+  const rx = Math.abs(x2 - x1)/2;
+  const ry = Math.abs(y2 - y1)/2;
+  const cx = (x1 + x2)/2;
+  const cy = (y1 + y2)/2;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, 2*Math.PI);
+  ctx.stroke();
+}
+
+// Кнопка отмены
+document.getElementById('undoBtn').onclick = () => { undo(); };
+</script>
+</body>
+</html>
