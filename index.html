@@ -2,300 +2,631 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Paint web</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Расширенный графический редактор с множеством функций</title>
 <style>
   body {
     margin: 0;
-    background: #c0c0c0;
-    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
   }
-
-  /* Заголовок */
-  #titleBar {
-    background: #0078D7;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    color: white;
-    font-weight: bold;
-  }
-
-  /* Панель инструментов */
   #toolbar {
     display: flex;
-    background: #E1E1E1;
-    padding: 5px;
-    gap: 5px;
-    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px;
+    background-color: #222;
+  }
+  .tool-button {
+    background-color: #fff;
+    border: none;
+    padding: 8px 12px;
+    margin: 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background 0.3s;
+  }
+  .tool-button:hover {
+    background-color: #ddd;
+  }
+  .tool-button.active {
+    background-color: #4CAF50;
+    color: #fff;
+  }
+  #colorPicker, #customColor, #shadowColor, #gradientPicker {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  #canvasContainer {
+    position: relative;
+    border: 1px solid #ccc;
+    margin: 10px auto;
+    background-color: #fff;
+    width: 90%;
+    max-width: 1400px;
+    height: 80vh;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #layerControls {
+    display: none;
+    flex-direction: column;
+    padding: 5px 10px;
+    background: #444;
+    color: #fff;
+  }
+  #layersList {
+    display: flex;
+    margin-top: 5px;
     flex-wrap: wrap;
   }
-
-  /* Кнопки и селекторы */
-  button, select, input[type=color], input[type=range] {
-    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-    padding: 5px 10px;
-    border: 2px solid #999;
-    border-radius: 2px;
-    background: #F0F0F0;
+  .layer-item {
+    padding: 4px 8px;
+    margin: 2px;
+    background: #666;
+    border-radius: 4px;
     cursor: pointer;
   }
-  button:hover, select:hover, input[type=color]:hover {
-    background: #DDD;
+  .layer-item.active {
+    background: #4CAF50;
   }
 
-  /* Холст и контейнер */
-  #canvasContainer {
-    border: 1px solid #888;
-    margin: 10px auto;
+  #effectsControls {
+    display: none;
+    flex-direction: column;
+    padding: 5px 10px;
+    background: #555;
+  }
+  #effectsControls input[type=range] {
+    width: 150px;
+  }
+
+  #fileButtons {
+    margin-top: 10px;
     display: flex;
     justify-content: center;
-    background: #fff;
-    overflow: auto; /* добавляем прокрутку */
-    width: 100%;
-    height: calc(100vh - 80px); /* чтобы занимать всю высоту окна минус панель */
   }
-  #paintCanvas {
-    width: 3000px;
-    height: 2000px;
+  .file-btn {
+    margin: 0 10px;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .file-btn:hover {
+    background-color: #45a049;
+  }
+
+  /* Расширенные стили для палитры */
+  #paletteContainer {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .color-swatch {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #999;
+    cursor: pointer;
+    border-radius: 3px;
   }
 </style>
 </head>
 <body>
 
-<!-- Заголовок -->
-<div id="titleBar">Paint web</div>
-
-<!-- Панель инструментов -->
 <div id="toolbar">
-  <!-- Инструменты рисования -->
-  <button id="brushBtn" data-tool="brush">Кисть</button>
-  <button id="lineBtn" data-tool="line">Линия</button>
-  <button id="rectBtn" data-tool="rect">Прямоугольник</button>
-  <button id="ellipseBtn" data-tool="ellipse">Эллипс</button>
-  <button id="fillBtn" data-tool="fill">Заливка</button>
-  <button id="eraserBtn" data-tool="eraser">Ластик</button>
-  <button id="undoBtn" title="Отмена">Отмена</button>
-  Цвет: <input type="color" id="colorPicker" value="#000000" />
-  Размер: <input type="range" id="sizeRange" min="1" max="50" value="5" />
-  📂 <button id="loadBtn" title="Загрузить изображение">Загрузить</button>
-  <input type="file" id="fileInput" style="display:none" accept="image/*" />
-  💾 <button id="saveBtn" title="Сохранить">Сохранить</button>
-  🧹 <button id="clearBtn" title="Очистить">Очистить</button>
+  <button class="tool-button active" data-tool="pen">Кисть</button>
+  <button class="tool-button" data-tool="eraser">Ластик</button>
+  <button class="tool-button" data-tool="rectangle">Прямоугольник</button>
+  <button class="tool-button" data-tool="line">Линия</button>
+  <button class="tool-button" data-tool="circle">Эллипс</button>
+  <button class="tool-button" data-tool="polygon">Многоугольник</button>
+  <button class="tool-button" data-tool="fill">Заливка</button>
+  <button class="tool-button" data-tool="text">Текст</button>
+  <button class="tool-button" id="layersBtn">Слои</button>
+  <button class="tool-button" id="effectsBtn">Эффекты</button>
+  <button class="tool-button" id="exportBtn">Экспорт</button>
+  <button class="tool-button" id="importBtn">Импорт</button>
+  <button class="tool-button" id="randomColorBtn">Случайный цвет</button>
+  <button class="tool-button" id="shadowBtn">Тень</button>
+  <button class="tool-button" id="brushSizeBtn">Размер кисти</button>
+  <button class="tool-button" id="undoBtn">Отменить</button>
 </div>
 
-<!-- Холст -->
+<!-- Панель выбора цвета -->
+<div style="display:flex; align-items:center; padding: 5px 10px; background:#222; font-size:14px;">
+  <div>Цвет:</div>
+  <input type="color" id="colorPicker" value="#000000" title="Выбор цвета"/>
+  <button class="tool-button" id="customColorBtn">Палитра</button>
+  <div id="paletteContainer" style="display:none;"></div>
+</div>
+
+<!-- Панель тени -->
+<div id="shadowPanel" style="display:none; padding:5px 10px; background:#333; color:#fff;">
+  <div>Настройки тени:</div>
+  <label>Цвет: <input type="color" id="shadowColor" value="#000000"></label>
+  <label>Размытие: <input type="range" id="shadowBlur" min="0" max="30" value="0"></label>
+  <label>Смещение X: <input type="number" id="shadowOffsetX" value="0" style="width:60px;"></label>
+  <label>Смещение Y: <input type="number" id="shadowOffsetY" value="0" style="width:60px;"></label>
+  <button class="tool-button" id="applyShadow">Применить</button>
+</div>
+
+<!-- Панель эффектов -->
+<div id="effectsPanel" style="display:none; padding:5px 10px; background:#555; flex-direction:column;">
+  <div>
+    <label>Прозрачность: <input type="range" id="alphaRange" min="0" max="1" step="0.01" value="1"></label>
+  </div>
+  <div>
+    <button class="tool-button" id="blurEffectBtn">Размытие</button>
+    <button class="tool-button" id="clearEffectsBtn">Очистить эффекты</button>
+  </div>
+  <div>
+    <button class="tool-button" id="gradientEffectBtn">Градиент</button>
+  </div>
+  <div>
+    <label>Наклон градиента: <input type="number" id="gradientAngle" value="45" style="width:50px;"></label>
+  </div>
+</div>
+
+<!-- Панель слоев -->
+<div id="layerControls" style="display:none; flex-direction:column;">
+  <div>Слои:</div>
+  <div id="layersList"></div>
+  <button class="tool-button" id="addLayerBtn">Добавить слой</button>
+  <button class="tool-button" id="deleteLayerBtn">Удалить слой</button>
+</div>
+
+<!-- Основной холст -->
 <div id="canvasContainer">
-  <canvas id="paintCanvas" width="3000" height="2000"></canvas>
+  <canvas id="myCanvas"></canvas>
 </div>
 
-<!-- Статус -->
-<div id="statusBar">Инструмент: Карандаш | Цвет: #000000 | Размер: 5</div>
+<!-- Кнопки сохранения/загрузки -->
+<div id="fileButtons" style="display:flex; justify-content:center; margin-top:10px;">
+  <button class="file-btn" id="saveBtn">Сохранить</button>
+  <button class="file-btn" id="loadBtn">Загрузить</button>
+  <input type="file" id="fileInput" style="display:none;">
+</div>
 
+<!-- Скрипт -->
 <script>
-const canvas = document.getElementById('paintCanvas');
-const ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('canvasContainer');
 
-let painting = false;
-let currentTool = 'pencil'; // pencil, brush, line, rect, ellipse, fill, eraser
-let currentColor = document.getElementById('colorPicker').value;
-let brushSize = document.getElementById('sizeRange').value;
-
-let startX = 0, startY = 0;
-let tempCanvas = document.createElement('canvas');
-let tempCtx = tempCanvas.getContext('2d');
-
-let undoStack = [];
-let redoStack = [];
-
-// Обновление статуса
-function updateStatus() {
-  document.getElementById('statusBar').textContent = 
-    `Инструмент: ${currentTool} | Цвет: ${currentColor} | Размер: ${brushSize}`;
-}
-
-// Обновление цвета и размера
-document.getElementById('colorPicker').addEventListener('change', () => {
-  currentColor = document.getElementById('colorPicker').value;
-  updateStatus();
-});
-document.getElementById('sizeRange').addEventListener('input', () => {
-  brushSize = document.getElementById('sizeRange').value;
-  updateStatus();
-});
-
-// Назначение инструментов
-document.querySelectorAll('#toolbar button').forEach(btn => {
-  if (btn.id !== 'undoBtn' && btn.id !== 'redoBtn' && btn.id !== 'loadBtn' && btn.id !== 'saveBtn' && btn.id !== 'clearBtn') {
-    btn.onclick = () => {
-      currentTool = btn.getAttribute('data-tool');
-      updateStatus();
-    };
+  // Размер холста
+  function resizeCanvas() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    drawLayers();
   }
-});
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
 
-// Загрузка файла
-const fileInput = document.getElementById('fileInput');
-document.getElementById('loadBtn').onclick = () => {
-  fileInput.click();
-};
-fileInput.addEventListener('change', () => {
-  const file = fileInput.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        saveState();
+  // Переменные
+  let currentTool = 'pen';
+  let drawing = false;
+  let startX=0, startY=0;
+  let currentColor = document.getElementById('colorPicker').value;
+  let lineWidth=3;
+  let undoStack = [];
+  let layers = [];
+  let currentLayerIndex=0;
+  let applyBlur=false;
+  let blurRadius=5;
+  let applyGradient=false;
+  let gradientAngle=45;
+  let globalAlpha=1;
+  let shadowSettings={color:'#000000',blur:0,offsetX:0,offsetY:0};
+  let currentEffects={};
+
+  // Функции слоёв
+  function createLayer(name) {
+    const layerCanvas=document.createElement('canvas');
+    layerCanvas.width=canvas.width;
+    layerCanvas.height=canvas.height;
+    const layerCtx = layerCanvas.getContext('2d');
+    layers.push({name:name || 'Layer '+(layers.length+1),canvas:layerCanvas,ctx:layerCtx});
+    currentLayerIndex=layers.length-1;
+    updateLayersUI();
+    drawLayers();
+  }
+  function drawLayers() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (let i=0; i<layers.length; i++){
+      let layer=layers[i];
+      let tempCanvas=layer.canvas;
+      if (applyBlur) {
+        tempCanvas=applyBlurEffect(layer.canvas);
+      }
+      ctx.globalAlpha=(i===currentLayerIndex)?globalAlpha:0.5;
+      ctx.drawImage(tempCanvas,0,0);
+    }
+    ctx.globalAlpha=1;
+  }
+  function updateLayersUI() {
+    const list=document.getElementById('layersList');
+    list.innerHTML='';
+    layers.forEach((layer,i)=>{
+      const div=document.createElement('div');
+      div.className='layer-item'+(i===currentLayerIndex?' active':'');
+      div.textContent=layer.name;
+      div.onclick= ()=> {
+        currentLayerIndex=i;
+        updateLayersUI();
+        drawLayers();
       };
-      img.src = e.target.result;
+      list.appendChild(div);
+    });
+  }
+  // Изначальный слой
+  createLayer();
+
+  document.getElementById('addLayerBtn').onclick= ()=> {createLayer();};
+  document.getElementById('deleteLayerBtn').onclick= ()=> {
+    if (layers.length>1) {
+      layers.splice(currentLayerIndex,1);
+      currentLayerIndex=Math.max(0,currentLayerIndex-1);
+      updateLayersUI();
+      drawLayers();
+    }
+  };
+
+  // Выбор цвета
+  document.getElementById('colorPicker').onchange= (e)=> {
+    currentColor=e.target.value;
+  };
+
+  // Переключатели инструментов
+  document.querySelectorAll('.tool-button').forEach(btn=>{
+    btn.onclick= ()=> {
+      document.querySelectorAll('.tool-button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      if (btn.id==='effectsBtn') {
+        togglePanel('effectsPanel');
+      } else if (btn.id==='layersBtn') {
+        togglePanel('layerControls');
+      } else if (btn.id==='brushSizeBtn') {
+        let size=prompt('Введите размер кисти:', lineWidth);
+        if (size) lineWidth=parseInt(size);
+      } else if (btn.id==='randomColorBtn') {
+        currentColor='#'+Math.floor(Math.random()*16777215).toString(16);
+        document.getElementById('colorPicker').value=currentColor;
+      } else if (btn.id==='shadowBtn') {
+        togglePanel('shadowPanel');
+      } else {
+        currentTool=btn.dataset.tool || 'pen';
+      }
     };
-    reader.readAsDataURL(file);
-  }
-});
+  });
 
-// Основные функции для undo/redo
-function saveState() {
-  if (undoStack.length > 20) undoStack.shift();
-  undoStack.push(canvas.toDataURL());
-}
-function undo() {
-  if (undoStack.length === 0) return;
-  redoStack.push(canvas.toDataURL());
-  let imgData = undoStack.pop();
-  let img = new Image();
-  img.onload = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
-  };
-  img.src = imgData;
-}
-function redo() {
-  if (redoStack.length === 0) return;
-  undoStack.push(canvas.toDataURL());
-  let imgData = redoStack.pop();
-  let img = new Image();
-  img.onload = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
-  };
-  img.src = imgData;
-}
-function clearCanvas() {
-  saveState();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-function saveCanvas() {
-  const dataURL = canvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = dataURL;
-  a.download = 'paint.png';
-  a.click();
-}
+  function togglePanel(id) {
+    ['effectsPanel','layerControls','shadowPanel'].forEach(pid => {
+      document.getElementById(pid).style.display='none';
+    });
+    document.getElementById(id).style.display='flex';
+  }
 
-// Обработка мыши
-canvas.addEventListener('mousedown', (e) => {
-  saveState();
-  painting = true;
-  startX = e.offsetX;
-  startY = e.offsetY;
-  if (currentTool==='fill') {
-    fillArea(e.offsetX, e.offsetY);
-  } else if (currentTool==='pencil' || currentTool==='brush' || currentTool==='eraser') {
-    ctx.lineWidth = brushSize;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = currentTool==='eraser' ? '#fff' : currentColor;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-  } else if (currentTool==='line' || currentTool==='rect' || currentTool==='ellipse') {
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-    tempCtx.drawImage(canvas, 0, 0);
+  // Выбор цвета из палитры
+  const paletteContainer=document.getElementById('paletteContainer');
+  document.getElementById('customColorBtn').onclick= ()=> {
+    paletteContainer.innerHTML='';
+    generatePalette();
+    paletteContainer.style.display= paletteContainer.style.display==='none'?'flex':'none';
+  };
+
+  function generatePalette() {
+    const colors=[
+      '#000000','#FFFFFF','#FF0000','#00FF00','#0000FF','#FFFF00','#FF00FF','#00FFFF',
+      '#800000','#008000','#000080','#808000','#800080','#008080','#808080','#C0C0C0'
+    ];
+    colors.forEach(c=> {
+      const swatch=document.createElement('div');
+      swatch.className='color-swatch';
+      swatch.style.backgroundColor=c;
+      swatch.onclick= ()=> {
+        currentColor=c;
+        document.getElementById('colorPicker').value=c;
+        paletteContainer.style.display='none';
+      };
+      paletteContainer.appendChild(swatch);
+    });
   }
-});
-canvas.addEventListener('mouseup', (e) => {
-  if (!painting) return;
-  if (currentTool==='line') {
-    drawLine(startX, startY, e.offsetX, e.offsetY);
-  } else if (currentTool==='rect') {
-    drawRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
-  } else if (currentTool==='ellipse') {
-    drawEllipse(startX, startY, e.offsetX, e.offsetY);
+
+  // Обработка мыши
+  canvas.addEventListener('mousedown', (e)=>{
+    if (currentTool==='effects' || currentTool==='layers' || currentTool==='shadow') return;
+    saveState();
+    drawing=true;
+    startX=e.offsetX;
+    startY=e.offsetY;
+
+    if (currentTool==='fill') {
+      fillArea(e.offsetX,e.offsetY);
+      drawing=false;
+    } else if (currentTool==='text') {
+      const text=prompt('Введите текст','Текст');
+      if (text) {
+        layers[currentLayerIndex].ctx.fillStyle=currentColor;
+        layers[currentLayerIndex].ctx.font='20px Arial';
+        layers[currentLayerIndex].ctx.fillText(text,e.offsetX,e.offsetY);
+        drawLayers();
+      }
+      drawing=false;
+    } else if (currentTool==='pen' || currentTool==='eraser') {
+      const layer=layers[currentLayerIndex];
+      layer.ctx.lineCap='round';
+      layer.ctx.lineJoin='round';
+      layer.ctx.lineWidth=lineWidth;
+      layer.ctx.globalCompositeOperation= currentTool==='eraser'?'destination-out':'source-over';
+      layer.ctx.strokeStyle= currentTool==='eraser'?'#fff':currentColor;
+      layer.ctx.beginPath();
+      layer.ctx.moveTo(e.offsetX,e.offsetY);
+    }
+  });
+
+  canvas.addEventListener('mouseup', (e)=>{
+    if (!drawing) return;
+    drawing=false;
+    const endX=e.offsetX;
+    const endY=e.offsetY;
+    switch(currentTool) {
+      case 'rectangle': drawRectangleLayer(startX,startY,endX,endY); break;
+      case 'line': drawLineLayer(startX,startY,endX,endY); break;
+      case 'circle': drawEllipseLayer(startX,startY,endX,endY); break;
+      case 'polygon': drawPolygonLayer(startX,startY,endX,endY,5); break;
+      default: break;
+    }
+    drawLayers();
+  });
+
+  canvas.addEventListener('mousemove', (e)=>{
+    if (!drawing) return;
+    if (currentTool==='pen' || currentTool==='eraser') {
+      const layer=layers[currentLayerIndex];
+      layer.ctx.lineTo(e.offsetX,e.offsetY);
+      layer.ctx.stroke();
+    }
+  });
+
+  // Функции рисования на текущем слое
+  function drawRectangleLayer(x1,y1,x2,y2) {
+    const layer=layers[currentLayerIndex];
+    layer.ctx.strokeStyle=currentColor;
+    layer.ctx.lineWidth=lineWidth;
+    layer.ctx.strokeRect(x1,y1,x2 - x1,y2 - y1);
   }
-  painting=false;
-});
-canvas.addEventListener('mouseout', () => {
-  if (painting && (currentTool==='line' || currentTool==='rect' || currentTool==='ellipse')) {
-    // ничего не делаем
+  function drawLineLayer(x1,y1,x2,y2) {
+    const layer=layers[currentLayerIndex];
+    layer.ctx.strokeStyle=currentColor;
+    layer.ctx.lineWidth=lineWidth;
+    layer.ctx.beginPath();
+    layer.ctx.moveTo(x1,y1);
+    layer.ctx.lineTo(x2,y2);
+    layer.ctx.stroke();
   }
-  painting=false;
-});
-canvas.addEventListener('mousemove', (e) => {
-  if (!painting) return;
-  if (currentTool==='pencil' || currentTool==='brush' || currentTool==='eraser') {
-    ctx.lineWidth = brushSize;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = currentTool==='eraser' ? '#fff' : currentColor;
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-  } else if (currentTool==='line' || currentTool==='rect' || currentTool==='ellipse') {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(tempCanvas, 0, 0);
-    if (currentTool==='line') {
-      drawLine(startX, startY, e.offsetX, e.offsetY);
-    } else if (currentTool==='rect') {
-      drawRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
-    } else if (currentTool==='ellipse') {
-      drawEllipse(startX, startY, e.offsetX, e.offsetY);
+  function drawEllipseLayer(x1,y1,x2,y2) {
+    const layer=layers[currentLayerIndex];
+    layer.ctx.strokeStyle=currentColor;
+    layer.ctx.lineWidth=lineWidth;
+    const centerX=(x1+x2)/2;
+    const centerY=(y1+y2)/2;
+    const radiusX=Math.abs(x2 - x1)/2;
+    const radiusY=Math.abs(y2 - y1)/2;
+    layer.ctx.beginPath();
+    layer.ctx.ellipse(centerX,centerY,radiusX,radiusY,0,0,Math.PI*2);
+    layer.ctx.stroke();
+  }
+  function drawPolygonLayer(x1,y1,x2,y2,sides) {
+    const layer=layers[currentLayerIndex];
+    layer.ctx.strokeStyle=currentColor;
+    layer.ctx.lineWidth=lineWidth;
+    const centerX=(x1+x2)/2;
+    const centerY=(y1+y2)/2;
+    const radius=Math.hypot(x2 - x1,y2 - y1)/2;
+    layer.ctx.beginPath();
+    for (let i=0; i<=sides; i++) {
+      const angle=(i/sides)*2*Math.PI;
+      const px=centerX+radius*Math.cos(angle);
+      const py=centerY+radius*Math.sin(angle);
+      if (i===0) layer.ctx.moveTo(px,py);
+      else layer.ctx.lineTo(px,py);
+    }
+    layer.ctx.closePath();
+    layer.ctx.stroke();
+  }
+
+  // Заливка
+  function fillArea(x,y) {
+    const layer=layers[currentLayerIndex];
+    const imageData=layer.ctx.getImageData(0,0,layer.canvas.width,layer.canvas.height);
+    const targetColor=getPixelColor(x,y,imageData);
+    const fillColor=hexToRgb(currentColor);
+    floodFill(x,y,targetColor,fillColor,imageData);
+    layer.ctx.putImageData(imageData,0,0);
+    drawLayers();
+  }
+  function getPixelColor(x,y,imageData) {
+    const index=(Math.floor(y)*imageData.width+Math.floor(x))*4;
+    return [imageData.data[index],imageData.data[index+1],imageData.data[index+2],imageData.data[index+3]];
+  }
+  function hexToRgb(hex) {
+    const bigint=parseInt(hex.slice(1),16);
+    const r=(bigint>>16)&255;
+    const g=(bigint>>8)&255;
+    const b=bigint&255;
+    return [r,g,b,255];
+  }
+  function floodFill(x,y,targetColor,fillColor,imageData) {
+    const stack=[[x,y]];
+    while(stack.length>0){
+      const [cx,cy]=stack.pop();
+      if (cx<0 || cy<0 || cx>=imageData.width || cy>=imageData.height) continue;
+      const currentColorPixel=getPixelColor(cx,cy,imageData);
+      if (!colorsMatch(currentColorPixel,targetColor)) continue;
+      setPixelColor(cx,cy,fillColor,imageData);
+      stack.push([cx-1,cy]);
+      stack.push([cx+1,cy]);
+      stack.push([cx,cy-1]);
+      stack.push([cx,cy+1]);
     }
   }
-});
+  function colorsMatch(c1,c2){return c1[0]===c2[0] && c1[1]===c2[1] && c1[2]===c2[2] && c1[3]===c2[3];}
+  function setPixelColor(x,y,color,imageData){
+    const index=(Math.floor(y)*imageData.width+Math.floor(x))*4;
+    imageData.data[index]=color[0];
+    imageData.data[index+1]=color[1];
+    imageData.data[index+2]=color[2];
+    imageData.data[index+3]=color[3];
+  }
 
-// Функции
-function drawLine(x1, y1, x2, y2) {
-  ctx.strokeStyle = currentColor;
-  ctx.lineWidth = brushSize;
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-}
-function drawRect(x, y, w, h) {
-  ctx.strokeStyle = currentColor;
-  ctx.lineWidth = brushSize;
-  ctx.strokeRect(x, y, w, h);
-}
-function drawEllipse(x1, y1, x2, y2) {
-  ctx.strokeStyle = currentColor;
-  ctx.lineWidth = brushSize;
-  const rx = Math.abs(x2 - x1)/2;
-  const ry = Math.abs(y2 - y1)/2;
-  const cx = (x1 + x2)/2;
-  const cy = (y1 + y2)/2;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, 2*Math.PI);
-  ctx.stroke();
-}
+  // Кисть и ластик
+  document.querySelectorAll('.tool-button').forEach(btn => {
+    if (['pen','eraser'].includes(btn.dataset.tool)) {
+      btn.onmousedown= ()=> {
+        saveState();
+        drawing=true;
+        startX=0; startY=0;
+        const layer=layers[currentLayerIndex];
+        layer.ctx.lineCap='round';
+        layer.ctx.lineJoin='round';
+        layer.ctx.lineWidth=lineWidth;
+        layer.ctx.globalCompositeOperation=btn.dataset.tool==='eraser'?'destination-out':'source-over';
+        layer.ctx.strokeStyle=btn.dataset.tool==='eraser'?'#fff':currentColor;
+        layer.ctx.beginPath();
+      };
+      btn.onmouseup= ()=> {
+        if (drawing && (btn.dataset.tool==='pen' || btn.dataset.tool==='eraser')) {
+          layers[currentLayerIndex].ctx.stroke();
+          layers[currentLayerIndex].ctx.globalCompositeOperation='source-over';
+          drawing=false;
+        }
+      };
+      btn.onmousemove= (e)=> {
+        if (drawing && (btn.dataset.tool==='pen' || btn.dataset.tool==='eraser')) {
+          layers[currentLayerIndex].ctx.lineTo(e.offsetX,e.offsetY);
+          layers[currentLayerIndex].ctx.stroke();
+        }
+      };
+    }
+  });
 
-// Кнопка отмены
-document.getElementById('undoBtn').onclick = () => { undo(); };
+  // Экспорт
+  document.getElementById('saveBtn').onclick= ()=> {
+    const combinedCanvas=document.createElement('canvas');
+    combinedCanvas.width=canvas.width;
+    combinedCanvas.height=canvas.height;
+    const cctx=combinedCanvas.getContext('2d');
+    layers.forEach(l=>cctx.drawImage(l.canvas,0,0));
+    const dataURL=combinedCanvas.toDataURL('image/png');
+    const a=document.createElement('a');
+    a.href=dataURL;
+    a.download='my_drawing.png';
+    a.click();
+  };
 
-// ======= Обработка кнопки "Очистить" ======= 
-document.getElementById('clearBtn').onclick = () => {
-  clearCanvas();
-};
+  // Импорт
+  document.getElementById('loadBtn').onclick= ()=> {
+    document.getElementById('fileInput').click();
+  };
+  document.getElementById('fileInput').onchange= (e)=> {
+    const file=e.target.files[0];
+    if (!file) return;
+    const reader=new FileReader();
+    reader.onload= (evt)=> {
+      const img=new Image();
+      img.onload= ()=> {
+        createLayer('Импортированный');
+        layers[currentLayerIndex].ctx.clearRect(0,0,canvas.width,canvas.height);
+        layers[currentLayerIndex].ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        drawLayers();
+      };
+      img.src=evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
-// ======= Обработка кнопки "Сохранить" ======= 
-document.getElementById('saveBtn').onclick = () => {
-  saveCanvas();
-};
+  // Эффекты и настройки
+  document.getElementById('blurEffectBtn').onclick= ()=> {
+    applyBlur=!applyBlur;
+    drawLayers();
+  };
+  document.getElementById('clearEffectsBtn').onclick= ()=> {
+    applyBlur=false;
+    applyGradient=false;
+    currentEffects={};
+    drawLayers();
+  };
+  document.getElementById('gradientEffectBtn').onclick= ()=> {
+    applyGradient=true;
+    createGradient();
+    drawLayers();
+  };
+  document.getElementById('alphaRange').oninput= ()=> {
+    globalAlpha=parseFloat( document.getElementById('alphaRange').value);
+    drawLayers();
+  };
+
+  // Тень
+  document.getElementById('applyShadow').onclick= ()=> {
+    shadowSettings.color=document.getElementById('shadowColor').value;
+    shadowSettings.blur=parseInt(document.getElementById('shadowBlur').value);
+    shadowSettings.offsetX=parseInt(document.getElementById('shadowOffsetX').value);
+    shadowSettings.offsetY=parseInt(document.getElementById('shadowOffsetY').value);
+    drawLayers();
+  };
+
+  // Размытие эффект
+  function applyBlurEffect(sourceCanvas) {
+    if (!applyBlur) return sourceCanvas;
+    const offCanvas=document.createElement('canvas');
+    offCanvas.width=sourceCanvas.width;
+    offCanvas.height=sourceCanvas.height;
+    const offCtx=offCanvas.getContext('2d');
+    offCtx.filter='blur('+blurRadius+'px)';
+    offCtx.drawImage(sourceCanvas,0,0);
+    return offCanvas;
+  }
+
+  function createGradient() {
+    const gradCanvas=document.createElement('canvas');
+    gradCanvas.width=canvas.width;
+    gradCanvas.height=canvas.height;
+    const gctx=gradCanvas.getContext('2d');
+    const angleDeg= parseInt(document.getElementById('gradientAngle').value);
+    const rad=angleDeg*Math.PI/180;
+    const x1=0,y1=0,x2=Math.cos(rad)*canvas.width,y2=Math.sin(rad)*canvas.height;
+    const gradient=gctx.createLinearGradient(x1,y1,x2,y2);
+    gradient.addColorStop(0,'red');
+    gradient.addColorStop(0.5,'yellow');
+    gradient.addColorStop(1,'blue');
+    gctx.fillStyle=gradient;
+    gctx.fillRect(0,0,canvas.width,canvas.height);
+    // Накладываем градиент на текущий слой
+    const layer=layers[currentLayerIndex];
+    layer.ctx.globalAlpha=0.5;
+    layer.ctx.drawImage(gradCanvas,0,0);
+    layer.ctx.globalAlpha=1;
+  }
+
+  // Удаление эффектов
+  // (уже реализовано через кнопку "Очистить эффекты")
+
+  // Переключение между панелями
+  function togglePanel(id) {
+    ['effectsPanel','layerControls','shadowPanel'].forEach(pid => {
+      document.getElementById(pid).style.display='none';
+    });
+    document.getElementById(id).style.display='flex';
+  }
 </script>
 </body>
 </html>
