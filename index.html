@@ -8,13 +8,27 @@
   body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    background-color: #e0f7fa; /* светло-синий фон */
   }
+  /* Заголовок */
+  #header {
+    background-color: #0288d1;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  /* Панель инструментов */
   #toolbar {
     display: flex;
     flex-wrap: wrap;
     padding: 10px;
-    background-color: #222;
+    background-color: #039be5;
+    justify-content: center;
+    gap: 10px;
   }
   .tool-button {
     background-color: #fff;
@@ -24,92 +38,39 @@
     cursor: pointer;
     border-radius: 4px;
     font-size: 14px;
-    transition: background 0.3s;
+    transition: background 0.3s, transform 0.2s;
   }
   .tool-button:hover {
-    background-color: #ddd;
+    background-color: #81d4fa;
+    transform: scale(1.05);
   }
   .tool-button.active {
     background-color: #4CAF50;
     color: #fff;
   }
-  #colorPicker, #customColor, #shadowColor, #gradientPicker {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
+  /* Контейнер холста */
   #canvasContainer {
     position: relative;
-    border: 1px solid #ccc;
     margin: 10px auto;
-    background-color: #fff;
+    border: 2px solid #0288d1;
+    border-radius: 8px;
     width: 90%;
-    max-width: 1400px;
-    height: 80vh;
-    overflow: hidden;
+    max-width: 1200px;
+    height: 70vh;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
   canvas {
     display: block;
     width: 100%;
     height: 100%;
   }
-
-  #layerControls {
-    display: none;
-    flex-direction: column;
-    padding: 5px 10px;
-    background: #444;
-    color: #fff;
-  }
-  #layersList {
-    display: flex;
-    margin-top: 5px;
-    flex-wrap: wrap;
-  }
-  .layer-item {
-    padding: 4px 8px;
-    margin: 2px;
-    background: #666;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .layer-item.active {
-    background: #4CAF50;
-  }
-
-  #effectsControls {
-    display: none;
-    flex-direction: column;
-    padding: 5px 10px;
-    background: #555;
-  }
-  #effectsControls input[type=range] {
-    width: 150px;
-  }
-
-  #fileButtons {
-    margin-top: 10px;
-    display: flex;
-    justify-content: center;
-  }
-  .file-btn {
-    margin: 0 10px;
-    padding: 8px 16px;
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .file-btn:hover {
-    background-color: #45a049;
-  }
-
-  /* Расширенные стили для палитры */
+  /* Небольшие стили для палитры и настроек */
   #paletteContainer {
-    margin-top: 10px;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    margin-top: 10px;
   }
   .color-swatch {
     width: 24px;
@@ -122,6 +83,9 @@
 </head>
 <body>
 
+<div id="header">Paint web</div>
+
+<!-- Панель инструментов -->
 <div id="toolbar">
   <button class="tool-button active" data-tool="pen">Кисть</button>
   <button class="tool-button" data-tool="eraser">Ластик</button>
@@ -142,11 +106,11 @@
 </div>
 
 <!-- Панель выбора цвета -->
-<div style="display:flex; align-items:center; padding: 5px 10px; background:#222; font-size:14px;">
-  <div>Цвет:</div>
+<div style="display:flex; align-items:center; padding: 5px 10px; background:#039be5; font-size:14px;">
+  <div style="margin-right:8px;">Цвет:</div>
   <input type="color" id="colorPicker" value="#000000" title="Выбор цвета"/>
   <button class="tool-button" id="customColorBtn">Палитра</button>
-  <div id="paletteContainer" style="display:none;"></div>
+  <div id="paletteContainer" style="display:none; margin-left:10px;"></div>
 </div>
 
 <!-- Панель тени -->
@@ -164,35 +128,35 @@
   <div>
     <label>Прозрачность: <input type="range" id="alphaRange" min="0" max="1" step="0.01" value="1"></label>
   </div>
-  <div>
+  <div style="margin-top:8px;">
     <button class="tool-button" id="blurEffectBtn">Размытие</button>
     <button class="tool-button" id="clearEffectsBtn">Очистить эффекты</button>
   </div>
-  <div>
+  <div style="margin-top:8px;">
     <button class="tool-button" id="gradientEffectBtn">Градиент</button>
   </div>
-  <div>
+  <div style="margin-top:8px;">
     <label>Наклон градиента: <input type="number" id="gradientAngle" value="45" style="width:50px;"></label>
   </div>
 </div>
 
 <!-- Панель слоев -->
-<div id="layerControls" style="display:none; flex-direction:column;">
+<div id="layerControls" style="display:none; flex-direction:column; padding:10px; background:#444; color:#fff;">
   <div>Слои:</div>
-  <div id="layersList"></div>
-  <button class="tool-button" id="addLayerBtn">Добавить слой</button>
-  <button class="tool-button" id="deleteLayerBtn">Удалить слой</button>
+  <div id="layersList" style="margin-top:8px;"></div>
+  <button class="tool-button" id="addLayerBtn" style="margin-top:8px;">Добавить слой</button>
+  <button class="tool-button" id="deleteLayerBtn" style="margin-top:8px;">Удалить слой</button>
 </div>
 
 <!-- Основной холст -->
-<div id="canvasContainer">
+<div id="canvasContainer" style="margin:10px auto; border:2px solid #0288d1; border-radius:8px; width:90%; max-width:1200px; height:70vh; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
   <canvas id="myCanvas"></canvas>
 </div>
 
 <!-- Кнопки сохранения/загрузки -->
-<div id="fileButtons" style="display:flex; justify-content:center; margin-top:10px;">
-  <button class="file-btn" id="saveBtn">Сохранить</button>
-  <button class="file-btn" id="loadBtn">Загрузить</button>
+<div style="display:flex; justify-content:center; margin-top:10px;">
+  <button id="saveBtn" style="margin:0 10px; padding:8px 16px; background:#4CAF50; color:#fff; border:none; border-radius:4px; cursor:pointer;">Сохранить</button>
+  <button id="loadBtn" style="margin:0 10px; padding:8px 16px; background:#4CAF50; color:#fff; border:none; border-radius:4px; cursor:pointer;">Загрузить</button>
   <input type="file" id="fileInput" style="display:none;">
 </div>
 
@@ -202,7 +166,6 @@
   const ctx = canvas.getContext('2d');
   const container = document.getElementById('canvasContainer');
 
-  // Размер холста
   function resizeCanvas() {
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
@@ -211,7 +174,6 @@
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
 
-  // Переменные
   let currentTool = 'pen';
   let drawing = false;
   let startX=0, startY=0;
@@ -228,13 +190,13 @@
   let shadowSettings={color:'#000000',blur:0,offsetX:0,offsetY:0};
   let currentEffects={};
 
-  // Функции слоёв
+  // Создание слоя
   function createLayer(name) {
     const layerCanvas=document.createElement('canvas');
     layerCanvas.width=canvas.width;
     layerCanvas.height=canvas.height;
     const layerCtx = layerCanvas.getContext('2d');
-    layers.push({name:name || 'Layer '+(layers.length+1),canvas:layerCanvas,ctx:layerCtx});
+    layers.push({name:name||'Layer '+(layers.length+1),canvas:layerCanvas,ctx:layerCtx});
     currentLayerIndex=layers.length-1;
     updateLayersUI();
     drawLayers();
@@ -267,7 +229,6 @@
       list.appendChild(div);
     });
   }
-  // Изначальный слой
   createLayer();
 
   document.getElementById('addLayerBtn').onclick= ()=> {createLayer();};
@@ -280,12 +241,12 @@
     }
   };
 
-  // Выбор цвета
+  // Цвет
   document.getElementById('colorPicker').onchange= (e)=> {
     currentColor=e.target.value;
   };
 
-  // Переключатели инструментов
+  // Инструменты
   document.querySelectorAll('.tool-button').forEach(btn=>{
     btn.onclick= ()=> {
       document.querySelectorAll('.tool-button').forEach(b=>b.classList.remove('active'));
@@ -315,7 +276,7 @@
     document.getElementById(id).style.display='flex';
   }
 
-  // Выбор цвета из палитры
+  // Палитра
   const paletteContainer=document.getElementById('paletteContainer');
   document.getElementById('customColorBtn').onclick= ()=> {
     paletteContainer.innerHTML='';
@@ -341,9 +302,9 @@
     });
   }
 
-  // Обработка мыши
+  // Мышь
   canvas.addEventListener('mousedown', (e)=>{
-    if (currentTool==='effects' || currentTool==='layers' || currentTool==='shadow') return;
+    if (['effects','layers','shadow'].includes(currentTool)) return;
     saveState();
     drawing=true;
     startX=e.offsetX;
@@ -397,7 +358,7 @@
     }
   });
 
-  // Функции рисования на текущем слое
+  // Функции рисования
   function drawRectangleLayer(x1,y1,x2,y2) {
     const layer=layers[currentLayerIndex];
     layer.ctx.strokeStyle=currentColor;
@@ -584,7 +545,7 @@
     drawLayers();
   };
 
-  // Размытие эффект
+  // Размытие эффекта
   function applyBlurEffect(sourceCanvas) {
     if (!applyBlur) return sourceCanvas;
     const offCanvas=document.createElement('canvas');
@@ -596,6 +557,7 @@
     return offCanvas;
   }
 
+  // Градиент
   function createGradient() {
     const gradCanvas=document.createElement('canvas');
     gradCanvas.width=canvas.width;
@@ -603,30 +565,40 @@
     const gctx=gradCanvas.getContext('2d');
     const angleDeg= parseInt(document.getElementById('gradientAngle').value);
     const rad=angleDeg*Math.PI/180;
-    const x1=0,y1=0,x2=Math.cos(rad)*canvas.width,y2=Math.sin(rad)*canvas.height;
+    const x1=0,y1=0;
+    const x2=Math.cos(rad)*canvas.width;
+    const y2=Math.sin(rad)*canvas.height;
     const gradient=gctx.createLinearGradient(x1,y1,x2,y2);
     gradient.addColorStop(0,'red');
     gradient.addColorStop(0.5,'yellow');
     gradient.addColorStop(1,'blue');
     gctx.fillStyle=gradient;
     gctx.fillRect(0,0,canvas.width,canvas.height);
-    // Накладываем градиент на текущий слой
     const layer=layers[currentLayerIndex];
     layer.ctx.globalAlpha=0.5;
     layer.ctx.drawImage(gradCanvas,0,0);
     layer.ctx.globalAlpha=1;
   }
 
-  // Удаление эффектов
-  // (уже реализовано через кнопку "Очистить эффекты")
-
-  // Переключение между панелями
-  function togglePanel(id) {
-    ['effectsPanel','layerControls','shadowPanel'].forEach(pid => {
-      document.getElementById(pid).style.display='none';
-    });
-    document.getElementById(id).style.display='flex';
+  // Отмена
+  function saveState() {
+    const imageData=layers[currentLayerIndex].ctx.getImageData(0,0,canvas.width,canvas.height);
+    undoStack.push(imageData);
+    if (undoStack.length>20) undoStack.shift();
   }
+
+  document.getElementById('undoBtn').onclick= ()=> {
+    if (undoStack.length>0) {
+      const prev=undoStack.pop();
+      layers[currentLayerIndex].ctx.putImageData(prev,0,0);
+      drawLayers();
+    }
+  };
+
+  // Инициализация
+  createLayer();
+
+  // Остальные функции и обработчики можно добавлять по необходимости
 </script>
 </body>
 </html>
