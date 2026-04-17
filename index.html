@@ -1,176 +1,93 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Air Force</title>
-<style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(180deg, #0a0a2a 0%, #1a1a4a 100%);
-    color: #fff;
-    overflow: hidden;
-    height: 100vh;
-  }
-  
-  #gameContainer {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-  }
-  
-  #gameCanvas {
-    display: block;
-    background: #000;
-    border: 3px solid #2a5bd7;
-    box-shadow: 0 0 20px rgba(42, 91, 215, 0.7);
-    margin: 0 auto;
-  }
-  
-  #gameUI {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-  
-  #scoreBoard {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(0, 20, 40, 0.8);
-    padding: 15px 25px;
-    border-radius: 10px;
-    border: 2px solid #2a5bd7;
-    font-size: 24px;
-    font-weight: bold;
-    text-shadow: 0 0 10px #00a8ff;
-  }
-  
-  #healthBar {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 300px;
-    background: rgba(255, 0, 0, 0.2);
-    height: 30px;
-    border-radius: 15px;
-    border: 2px solid #ff0000;
-    overflow: hidden;
-  }
-  
-  #healthFill {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #ff0000 0%, #ff8800 100%);
-    transition: width 0.3s;
-  }
-  
-  #gameOverScreen {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 10, 30, 0.95);
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    border: 3px solid #2a5bd7;
-    box-shadow: 0 0 50px rgba(42, 91, 215, 0.5);
-    display: none;
-    pointer-events: all;
-  }
-  
-  #gameOverScreen h2 {
-    color: #ff0000;
-    font-size: 48px;
-    margin-bottom: 20px;
-    text-shadow: 0 0 15px #ff0000;
-  }
-  
-  #finalScore {
-    font-size: 36px;
-    color: #00ff88;
-    margin: 20px 0;
-    text-shadow: 0 0 10px #00ff88;
-  }
-  
-  #startScreen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(180deg, #000428 0%, #004e92 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-  }
-  
-  #gameTitle {
-    font-size: 72px;
-    color: #00a8ff;
-    text-shadow: 0 0 20px #00a8ff;
-    margin-bottom: 20px;
-    letter-spacing: 5px;
-  }
-  
-  #subTitle {
-    font-size: 24px;
-    color: #88d3ff;
-    margin-bottom: 50px;
-    text-align: center;
-  }
-  
-  .btn {
-    background: linear-gradient(180deg, #2a5bd7 0%, #1a3b9e 100%);
-    color: white;
-    border: none;
-    padding: 20px 50px;
-    font-size: 24px;
-    border-radius: 50px;
-    cursor: pointer;
-    margin: 10px;
-    transition: all 0.3s;
-    border: 3px solid #00a8ff;
-    box-shadow: 0 0 20px rgba(0, 168, 255, 0.5);
-  }
-  
-  .btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px rgba(0, 168, 255, 0.8);
-    background: linear-gradient(180deg, #3a6be7 0%, #2a4bae 100%);
-  }
-  
-  #controls {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 20, 40, 0.8);
-    padding: 20px;
-    border-radius: 15px;
-    border: 2px solid #2a5bd7;
-    text-align: center;
-  }
-  
-  #controls h3 {
-    color: #00a8ff;
-    margin-bottom: 10px;
-  }
-  
-  .key {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 5px 10px;
-    margin: 5px
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painter</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Painter</div>
+        <nav>
+            <ul>
+                <li><a href="#" id="new-file">Новый</a></li>
+                <li><a href="#" id="open-file">Открыть</a></li>
+                <li><a href="#" id="save-file">Сохранить</a></li>
+                <li><a href="#" id="save-as-png">Сохранить как PNG</a></li>
+                <li><a href="#" id="save-as-jpg">Сохранить как JPG</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="toolbar">
+            <div class="tool-group">
+                <label>Инструменты:</label>
+                <button data-tool="pencil" title="Карандаш (P)">P</button>
+                <button data-tool="brush" title="Кисть (B)">B</button>
+                <button data-tool="eraser" title="Ластик (E)">E</button>
+                <button data-tool="fill" title="Заливка (G)">G</button>
+                <button data-tool="line" title="Линия (L)">L</button>
+                <button data-tool="rectangle" title="Прямоугольник (R)">R</button>
+                <button data-tool="oval" title="Овал (O)">O</button>
+                <button data-tool="pipette" title="Пипетка (I)">I</button>
+                <button data-tool="text" title="Текст (T)">T</button>
+            </div>
+
+            <div class="tool-group">
+                <label>Размеры:</label>
+                <input type="range" id="line-width" min="1" max="50" value="5">
+                <span id="line-width-value">5</span>px
+            </div>
+
+            <div class="tool-group">
+                <label>Цвета:</label>
+                <div class="color-palette">
+                    <div class="main-color-display">
+                        <label for="main-color">Основной:</label>
+                        <input type="color" id="main-color" value="#000000">
+                    </div>
+                    <div class="secondary-color-display">
+                        <label for="secondary-color">Дополнительный:</label>
+                        <input type="color" id="secondary-color" value="#ffffff">
+                    </div>
+                    <button id="swap-colors" title="Поменять местами цвета">⇋</button>
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <label>Эффекты:</label>
+                <button id="undo" title="Отменить (Ctrl+Z)">Undo</button>
+                <button id="redo" title="Повторить (Ctrl+Y)">Redo</button>
+                <button id="clear-canvas" title="Очистить холст (Ctrl+N)">Clear</button>
+                <button id="invert-colors" title="Инвертировать цвета">Invert</button>
+                <button id="grayscale" title="Оттенки серого">Grayscale</button>
+            </div>
+
+            <div class="tool-group">
+                <label>Настройки холста:</label>
+                <button id="resize-canvas">Изменить размер</button>
+            </div>
+        </div>
+
+        <div class="canvas-area">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+
+    <div id="resize-modal" class="modal">
+        <div class="modal-content">
+            <h2>Изменить размер холста</h2>
+            <label for="canvas-width-input">Ширина:</label>
+            <input type="number" id="canvas-width-input">
+            <label for="canvas-height-input">Высота:</label>
+            <input type="number" id="canvas-height-input">
+            <button id="apply-resize">Применить</button>
+            <button class="close-modal">Отмена</button>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
