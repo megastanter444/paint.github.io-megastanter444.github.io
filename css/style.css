@@ -1,0 +1,286 @@
+/* Общие стили */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #1a202c; /* Темно-синий фон */
+    color: #e2e8f0; /* Светло-серый текст */
+    overflow: hidden; /* Предотвращаем появление полос прокрутки для всего body */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Хедер */
+header {
+    background-color: #2d3748; /* Средне-синий фон хедера */
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #4a5568;
+    flex-shrink: 0; /* Предотвращаем сжатие хедера */
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #63b3ed; /* Яркий синий для логотипа */
+    text-shadow: 0 0 5px rgba(99, 179, 237, 0.5); /* Легкое свечение */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 20px;
+}
+
+nav ul li a {
+    color: #a0aec0; /* Светло-серый для ссылок */
+    text-decoration: none;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    font-size: 14px;
+}
+
+nav ul li a:hover {
+    color: #63b3ed;
+    text-shadow: 0 0 5px rgba(99, 179, 237, 0.7);
+}
+
+/* Основной контейнер */
+.container {
+    display: flex;
+    flex-grow: 1; /* Занимает все оставшееся пространство */
+}
+
+/* Панель инструментов */
+.toolbar {
+    width: 250px;
+    background-color: #2d3748;
+    padding: 15px;
+    border-right: 1px solid #4a5568;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto; /* Позволяет прокручивать панель, если она переполняется */
+    flex-shrink: 0; /* Предотвращаем сжатие панели */
+}
+
+.toolbar .tool-group {
+    border-bottom: 1px solid #4a5568;
+    padding-bottom: 10px;
+}
+
+.toolbar .tool-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.toolbar label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #a0aec0;
+    font-size: 13px;
+}
+
+.toolbar button {
+    background-color: #4299e1; /* Синий для кнопок */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    font-size: 14px;
+    margin-right: 5px; /* Отступ между кнопками */
+    margin-bottom: 5px; /* Отступ между рядами кнопок */
+    display: inline-block; /* Чтобы кнопки располагались в строку */
+}
+
+.toolbar button:hover {
+    background-color: #2c5282; /* Более темный синий при наведении */
+    transform: translateY(-1px); /* Легкий подъем при наведении */
+}
+
+.toolbar button:active {
+    transform: translateY(0); /* Возвращаем кнопку на место при нажатии */
+}
+
+.toolbar button[data-tool="eraser"],
+.toolbar button[data-tool="fill"],
+.toolbar button[data-tool="rectangle"],
+.toolbar button[data-tool="oval"] {
+    background-color: #63b3ed; /* Другой оттенок синего для некоторых инструментов */
+}
+
+.toolbar button[data-tool="eraser"]:hover,
+.toolbar button[data-tool="fill"]:hover,
+.toolbar button[data-tool="rectangle"]:hover,
+.toolbar button[data-tool="oval"]:hover {
+    background-color: #3182ce;
+}
+
+/* Инструмент "Текст" */
+.toolbar button[data-tool="text"] {
+    background-color: #805ad5; /* Фиолетовый для текста */
+}
+.toolbar button[data-tool="text"]:hover {
+    background-color: #553c9a;
+}
+
+/* Активный инструмент */
+.toolbar button.active {
+    background-color: #ed8936; /* Оранжевый для активного инструмента */
+    box-shadow: 0 0 8px rgba(237, 137, 54, 0.7);
+}
+
+/* Размер линии */
+#line-width {
+    width: 100%;
+    cursor: pointer;
+}
+
+#line-width-value {
+    font-weight: bold;
+    color: #63b3ed;
+}
+
+/* Палитра цветов */
+.color-palette {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap; /* Позволяет переноситься на новую строку */
+}
+
+.main-color-display,
+.secondary-color-display {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.color-palette input[type="color"] {
+    width: 30px;
+    height: 30px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0; /* Убираем внутренние отступы */
+    background: none; /* Убираем фоновый цвет по умолчанию */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для input type="color" */
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+#swap-colors {
+    background-color: #4a5568;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+#swap-colors:hover {
+    background-color: #718096;
+}
+
+/* Область холста */
+.canvas-area {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a202c; /* Фон области холста */
+    position: relative; /* Для позиционирования холста */
+}
+
+#canvas {
+    border: 1px solid #4a5568;
+    background-color: white; /* Цвет холста по умолчанию */
+    cursor: crosshair;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    max-width: 100%; /* Чтобы холст не вылезал за пределы экрана */
+    max-height: 100%;
+}
+
+/* Модальное окно для изменения размера */
+.modal {
+    display: none; /* По умолчанию скрыто */
+    position: fixed; /* Фиксированное позиционирование */
+    z-index: 1000; /* Поверх всего */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Включает прокрутку, если контент не помещается */
+    background-color: rgba(0,0,0,0.4); /* Полупрозрачный черный фон */
+}
+
+.modal-content {
+    background-color: #2d3748;
+    margin: 15% auto; /* 15% сверху и по центру */
+    padding: 20px;
+    border: 1px solid #4a5568;
+    width: 80%; /* Ширина модального окна */
+    max-width: 400px; /* Максимальная ширина */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #63b3ed;
+}
+
+.modal-content label {
+    font-weight: bold;
+}
+
+.modal-content input[type="number"] {
+    padding: 8px;
+    border: 1px solid #4a5568;
+    background-color: #1a202c;
+    color: #e2e8f0;
+    border-radius: 4px;
+}
+
+.modal-content button {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#apply-resize {
+    background-color: #4299e1;
+    color: white;
+}
+#apply-resize:hover {
+    background-color: #2c5282;
+}
+
+.close-modal {
+    background-color: #718096;
+    color: white;
+}
+.close-modal:hover {
+    background-color: #a0aec0;
+}
